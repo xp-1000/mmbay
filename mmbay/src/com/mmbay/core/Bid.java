@@ -181,7 +181,6 @@ public class Bid {
 					toAlert = true;
 				if (notification.getEvent() == BidEvent.RESERVEDREACHED && offer.getBuyer().getUserConfiguration().isNotifiedForReservedReached() == true)
 					toAlert = true;
-				System.out.println(toAlert);
 				if (toAlert)
 					notifier.send(notification, product, offer.getBuyer().getLogin());
 			}

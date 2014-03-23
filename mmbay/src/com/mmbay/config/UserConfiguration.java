@@ -1,8 +1,5 @@
 package com.mmbay.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class UserConfiguration {
 	
 	private boolean notifiedForReservedReached;
@@ -10,9 +7,9 @@ public class UserConfiguration {
 	private boolean notifiedForUpperOffer;
 	
 	public UserConfiguration() {
-		this.setNotifiedForReservedReached(false);
-		this.setNotifiedForBidCanceled(false);
-		this.setNotifiedForUpperOffer(false);
+		this.setNotifiedForReservedReached(true);
+		this.setNotifiedForBidCanceled(true);
+		this.setNotifiedForUpperOffer(true);
 	}
 	
 	public UserConfiguration(boolean notifyForReservedReached, boolean notifyForBidCanceled, boolean notifyForUpperOffer) {
