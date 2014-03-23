@@ -6,7 +6,7 @@ public interface UserFactory {
 		
 	public void add(String username, String password, String first, String last);
 	
-	public void removeUser();
+	public void remove();
 	
 	public boolean isConnected(String login);
 	

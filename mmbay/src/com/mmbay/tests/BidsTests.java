@@ -2,6 +2,8 @@ package com.mmbay.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.junit.Before;
@@ -9,7 +11,6 @@ import org.junit.Test;
 
 import com.mmbay.persistence.ProductsTestDb;
 import com.mmbay.persistence.UsersTestDb;
-
 import com.mmbay.core.Bid;
 import com.mmbay.core.BidEvent;
 import com.mmbay.core.BidStatus;
@@ -32,6 +33,7 @@ public class BidsTests {
 	private UserFactory userManagement;
 	private BidFactory bidManagement;
 	private User seller, buyer, otherBuyer;
+	private Calendar dueDate;
 
 	@Before
 	public void init() {
@@ -51,15 +53,16 @@ public class BidsTests {
 		userManagement.add(otherVar + UsersTestDb.buyerLogin, otherVar + UsersTestDb.buyerPassword, otherVar + UsersTestDb.buyerFirst, otherVar + UsersTestDb.buyerLast);
 		userManagement.connect(otherVar + UsersTestDb.buyerLogin, otherVar + UsersTestDb.buyerPassword);
 		otherBuyer = userManagement.getLast();
+		dueDate = new GregorianCalendar(2014, Calendar.DECEMBER, 24);
 		
 	}
-	
+
 	
 	@Test
 	public void testCreateBid()  
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
 		// First Bid creation
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		Bid bid = bidManagement.getByProductId(ProductsTestDb.productId);
 		// The new bid must exist with CREATED status
 		assertEquals(BidStatus.CREATED, bid.getStatus());
@@ -73,7 +76,7 @@ public class BidsTests {
 		User tmpUser = userManagement.getLast();
 		
 		// Test creation Bid with no connected user. Exception must be raised
-		bidManagement.add(tmpUser, tmpName, "tmpDescr", 0.0f);
+		bidManagement.add(tmpUser, dueDate, tmpName, "tmpDescr", 0.0f);
 		Bid bid = bidManagement.getByProductId(tmpName);
 		// getByProductId must return a null value because no bid was created
 		assertEquals(null, bid);
@@ -83,7 +86,7 @@ public class BidsTests {
 	public void testPublishBid()  
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
 		// Test Publishing first bid
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		Bid bid = bidManagement.getByProductId(ProductsTestDb.productId);
 		// The new status of current bid must be PUBLISHED
@@ -94,7 +97,7 @@ public class BidsTests {
 	public void testCreateOffers() 
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
 		// Test creation 2 offers on first Bid
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productReserve+1);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, otherBuyer, ProductsTestDb.productReserve+2);
@@ -107,7 +110,7 @@ public class BidsTests {
 	public void testCreateOfferOnOwnBid() 
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
 		// Test creation 1 offer when seller = buyer
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, seller, ProductsTestDb.productReserve+1);
 		Bid bid = bidManagement.getByProductId(ProductsTestDb.productId);
@@ -119,7 +122,7 @@ public class BidsTests {
 	@Test(expected=OfferLowerThanMinPrice.class) 
 	public void testCreatedOfferLowerMinPrice()  
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		bidManagement.setMinPrice(ProductsTestDb.productId,ProductsTestDb.productMin);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productMin-1);
@@ -130,7 +133,7 @@ public class BidsTests {
 	@Test
 	public void testCreateOfferUpperMinPrice()  
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		bidManagement.setMinPrice(ProductsTestDb.productId,ProductsTestDb.productMin);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productMin+1);
@@ -141,7 +144,8 @@ public class BidsTests {
 	@Test
 	public void testCancelBid() 
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		buyer.getUserConfiguration().setNotifiedForBidCanceled(true);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productMin+1);
 		bidManagement.cancel(seller, ProductsTestDb.productId);
@@ -161,7 +165,7 @@ public class BidsTests {
 	@Test
 	public void testCancelBidReserveUnreached() 
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice, ProductsTestDb.productReserve);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice, ProductsTestDb.productReserve);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productReserve-1);
 		bidManagement.cancel(seller, ProductsTestDb.productId);
@@ -172,7 +176,7 @@ public class BidsTests {
 	@Test(expected=BidCancelReserveNotRaised.class) 
 	public void testCancelBidReserveReached()  
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice, ProductsTestDb.productReserve);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice, ProductsTestDb.productReserve);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productReserve+1);
 		bidManagement.cancel(seller, ProductsTestDb.productId);
@@ -184,7 +188,9 @@ public class BidsTests {
 	@Test
 	public void testNotifReserveReached() 
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice, ProductsTestDb.productReserve);
+		buyer.getUserConfiguration().setNotifiedForReservedReached(true);
+		buyer.getUserConfiguration().setNotifiedForUpperOffer(true);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice, ProductsTestDb.productReserve);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productReserve+1);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, otherBuyer, ProductsTestDb.productReserve+2);
@@ -202,7 +208,8 @@ public class BidsTests {
 	@Test
 	public void testNotifNewOffers()  
 			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
-		bidManagement.add(seller, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		buyer.getUserConfiguration().setNotifiedForUpperOffer(true);
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
 		bidManagement.publish(seller, ProductsTestDb.productId);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productReserve+1);
 		bidManagement.addOffertoBid(ProductsTestDb.productId, otherBuyer, ProductsTestDb.productReserve+2);
@@ -219,6 +226,24 @@ public class BidsTests {
 		assertEquals(seller.getLogin(), listDests.get(2));
 		assertEquals(BidEvent.NEWOFFER, listNotifs.get(2).getEvent());
 		assertEquals(otherBuyer.getLogin(), listNotifs.get(2).getSrc());
+	}
+	
+	@Test
+	public void testCompleteBid()  
+			throws OfferOnOwnBid, OfferWhenNotPubished, OfferLowerThanLast, OfferLowerThanMinPrice, BidStatusIfNotSeller, BidCancelReserveNotRaised, UserIsNotConnected {
+		//Fenetre fen = new Fenetre();
+		Calendar dueDate = new GregorianCalendar(2013, Calendar.DECEMBER, 24);
+		
+		bidManagement.add(seller, dueDate, ProductsTestDb.productId, ProductsTestDb.productDescr, ProductsTestDb.productPrice);
+		bidManagement.publish(seller, ProductsTestDb.productId);
+		bidManagement.addOffertoBid(ProductsTestDb.productId, buyer, ProductsTestDb.productMin+1);
+		Bid bid = bidManagement.getByProductId(ProductsTestDb.productId);
+		try {
+	        Thread.sleep(1000);
+	      } catch (InterruptedException e) {
+	        e.printStackTrace();
+	      }
+		assertEquals(BidStatus.COMPLETED, bid.getStatus());
 	}
 
 }

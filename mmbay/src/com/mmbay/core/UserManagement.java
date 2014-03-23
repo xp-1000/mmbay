@@ -19,7 +19,7 @@ public class UserManagement implements UserFactory {
 		usersList.add(new User(username,password,first,last));
 	}
 	
-	public void removeUser()
+	public void remove()
 	{
 		
 	}
@@ -30,8 +30,6 @@ public class UserManagement implements UserFactory {
 		 	return true;
 	 	else
 	 		return false;
-			
-			
 	}
 	
 	public boolean connect(String login, String password) {

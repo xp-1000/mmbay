@@ -12,6 +12,8 @@ import com.mmbay.exceptions.OfferLowerThanMinPrice;
 import com.mmbay.exceptions.OfferOnOwnBid;
 import com.mmbay.exceptions.OfferWhenNotPubished;
 import com.mmbay.factory.NotificationFactory;
+import com.mmbay.utils.Observer;
+import com.mmbay.utils.Timer;
 
 public class Bid {
 
@@ -24,6 +26,7 @@ public class Bid {
 	private BidStatus status;
 	private List<Offer> offers;
 	private NotificationFactory notifier;
+	private Timer timer;
 	
 	
 	public Bid (User seller, Product product, Calendar calendar, float price) {
@@ -34,6 +37,13 @@ public class Bid {
 		this.setNotification(new internalNotifier());
 		offers = new ArrayList<Offer>();
 		status = BidStatus.CREATED;
+		this.timer = new Timer(dueDate);
+		this.timer.addObserver(new Observer(){
+		      public void update() {
+		        setStatus(BidStatus.COMPLETED);
+		      }
+		    });
+		this.timer.start();
 	}
 	
 	public Bid (User seller, Product product, Calendar calendar, float price, float reservedPrice) {
@@ -130,8 +140,9 @@ public class Bid {
 						{
 							offers.add(new Offer(buyer, price));
 							offerAdded = true;
-							String oldBestBuyer = offers.get(offers.size()-2).getBuyer().getLogin();
-							notifier.send(new Notification(buyer.getLogin(), BidEvent.NEWUPPEROFFER), this.getProduct(), oldBestBuyer);
+							User oldBestBuyer = offers.get(offers.size()-2).getBuyer();
+							if (oldBestBuyer.getUserConfiguration().isNotifiedForUpperOffer())
+								notifier.send(new Notification(buyer.getLogin(), BidEvent.NEWUPPEROFFER), this.getProduct(), oldBestBuyer.getLogin());
 						}
 						else
 							throw new OfferLowerThanLast();
@@ -149,6 +160,7 @@ public class Bid {
 				throw new OfferOnOwnBid();
 			
 			if (offerAdded) {
+				
 				notifier.send(new Notification(buyer.getLogin(), BidEvent.NEWOFFER),this.getProduct(), seller.getLogin());
 				if (reservedPriceReached())
 					this.sendNotifToOffers(new Notification(buyer.getLogin(), BidEvent.RESERVEDREACHED),this.getProduct(), buyer.getLogin());				
@@ -163,7 +175,16 @@ public class Bid {
 		while (iter.hasNext()) {
 			Offer offer = iter.next();
 			if (exception == null || !exception.equals(offer.getBuyer().getLogin()))
-				notifier.send(notification, product, offer.getBuyer().getLogin());
+			{
+				boolean toAlert = false;
+				if (notification.getEvent() == BidEvent.BIDCANCELED && offer.getBuyer().getUserConfiguration().isNotifiedForBidCanceled() == true)
+					toAlert = true;
+				if (notification.getEvent() == BidEvent.RESERVEDREACHED && offer.getBuyer().getUserConfiguration().isNotifiedForReservedReached() == true)
+					toAlert = true;
+				System.out.println(toAlert);
+				if (toAlert)
+					notifier.send(notification, product, offer.getBuyer().getLogin());
+			}
 			
 		}
 	}

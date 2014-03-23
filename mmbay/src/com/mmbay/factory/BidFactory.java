@@ -15,9 +15,9 @@ import com.mmbay.exceptions.UserIsNotConnected;
 
 public interface BidFactory {
 	
-	public void add(User seller, String id, String description, float price) throws UserIsNotConnected;
+	public void add(User seller, Calendar dueDate, String id, String description, float price) throws UserIsNotConnected;
 	
-	public void add(User seller, String id, String description, float price, float reservedPrice) throws UserIsNotConnected;
+	public void add(User seller, Calendar dueDate, String id, String description, float price, float reservedPrice) throws UserIsNotConnected;
 
 	public void setMinPrice(String productId, float minPrice);
 

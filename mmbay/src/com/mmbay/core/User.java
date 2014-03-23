@@ -1,5 +1,6 @@
 package com.mmbay.core;
 
+import com.mmbay.config.UserConfiguration;
 import com.mmbay.utils.Encryption;
 
 public class User {
@@ -9,7 +10,7 @@ public class User {
 	private String first;
 	private String last;
 	private boolean connected;
-	
+	private UserConfiguration userConfiguration;
 	
 	public User(String login, String password, String first, String last) {
 		this.setLogin(login);
@@ -17,6 +18,7 @@ public class User {
 		this.setFirst(first);
 		this.setLast(last);
 		this.setConnected(false);
+		setUserConfiguration(new UserConfiguration());
 	}
 
 
@@ -58,6 +60,16 @@ public class User {
 
 	public void setConnected(boolean connected) {
 		this.connected = connected;
+	}
+
+
+	public UserConfiguration getUserConfiguration() {
+		return userConfiguration;
+	}
+
+
+	public void setUserConfiguration(UserConfiguration userConfiguration) {
+		this.userConfiguration = userConfiguration;
 	}
 
 }

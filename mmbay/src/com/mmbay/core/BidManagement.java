@@ -23,17 +23,17 @@ public class BidManagement implements BidFactory{
 		bidsList = new ArrayList<Bid>();
 	}
 	
-	public void add(User seller, String id, String description, float price) throws UserIsNotConnected {
+	public void add(User seller, Calendar dueDate, String id, String description, float price) throws UserIsNotConnected {
 		if (seller.isConnected() == true)
 			{
-			bidsList.add(new Bid(seller, new Product(id, description),Calendar.getInstance(), price));}
+			bidsList.add(new Bid(seller, new Product(id, description),dueDate, price));}
 		else
 			throw new UserIsNotConnected("add bid");
 	}
 	
-	public void add(User seller, String id, String description, float price, float reservedPrice) throws UserIsNotConnected {
+	public void add(User seller, Calendar dueDate, String id, String description, float price, float reservedPrice) throws UserIsNotConnected {
 		if (seller.isConnected() == true)
-			bidsList.add(new Bid(seller, new Product(id, description),Calendar.getInstance(), price, reservedPrice));
+			bidsList.add(new Bid(seller, new Product(id, description),dueDate, price, reservedPrice));
 		else
 			throw new UserIsNotConnected("add bid");
 	}
